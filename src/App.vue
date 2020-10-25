@@ -2,12 +2,13 @@
   <div class="container">
     <global-header :user="currentUser"/>
     <!--    <column-list :list="list"/>-->
-    <form action="">
+    <validate-form @form-submit="onFormSubmit">
       <div class="mb-3">
         <label class="form-label" for="exampleInputEmail">邮箱地址</label>
         <validate-input :rules="emailRules"
                         id="exampleInputEmail"
                         placeholder="请输入邮箱地址"
+                        ref="inputRef"
                         type="text"
                         v-model="emailVal"
         ></validate-input>
@@ -18,18 +19,22 @@
                         id="exampleInputPassword1"
                         placeholder="请输入密码"
                         type="password"
-                        v-model="emailVal"
+                        v-model="passwordVal"
         ></validate-input>
       </div>
-    </form>
+      <template v-slot:submit>
+        <span class="btn btn-danger">submit</span>
+      </template>
+    </validate-form>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, reactive, ref } from 'vue'
-import ColumnList, { ColumnProps } from './components/ColumnList.vue'
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue'
+import ColumnList, { ColumnProps } from './components/ColumnList.vue'
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
+import ValidateForm from '@/components/ValidateForm.vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 const currentUser: UserProps = {
@@ -72,19 +77,27 @@ export default defineComponent({
   name: 'App',
   components: {
     GlobalHeader,
+    ValidateForm,
     ValidateInput
     // ColumnList
   },
   setup () {
+    const inputRef = ref<any>()
     const emailVal = ref('')
     const passwordVal = ref('')
+    const onFormSubmit = (result: boolean) => {
+      console.log('ref', inputRef.value)
+      console.log('result', result)
+    }
     return {
       list: testData,
       currentUser,
       emailRules,
       passwordRules,
       emailVal,
-      passwordVal
+      passwordVal,
+      onFormSubmit,
+      inputRef
     }
   }
 })

@@ -6,10 +6,10 @@
 */
 <template>
   <nav class="navbar navbar-dark bg-primary justify-content-between mb-4 px-4">
-    <a class="navbar-brand" href="#">者也专栏</a>
+    <router-link class="navbar-brand" to="/">者也专栏</router-link>
     <ul class="list-inline mb-0" v-if="!user.isLogin">
-      <li class="list-inline-item"><a class="btn btn-outline-light my-2" href="#">登录</a></li>
-      <li class="list-inline-item"><a class="btn btn-outline-light my-2" href="#">注册</a></li>
+      <li class="list-inline-item"><router-link to="/login" class="btn btn-outline-light my-2">登录</router-link></li>
+      <li class="list-inline-item"><router-link to="/" class="btn btn-outline-light my-2">注册</router-link></li>
     </ul>
     <ul class="list-inline mb-0" v-else>
       <li class="list-inline-item">

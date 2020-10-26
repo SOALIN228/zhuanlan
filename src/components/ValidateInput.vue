@@ -6,13 +6,24 @@
 */
 <template>
   <div class="validate-input-container pb-3">
-    <input :class="{'is-invalid': inputRef.error}"
-           :value="inputRef.val"
-           @blur="validateInput"
-           @input="updateValue"
-           class="form-control"
-           v-bind="$attrs"
+    <input
+      :class="{'is-invalid': inputRef.error}"
+      :value="inputRef.val"
+      @blur="validateInput"
+      @input="updateValue"
+      class="form-control"
+      v-bind="$attrs"
+      v-if="tag !== 'textarea'"
     >
+    <textarea
+      :class="{'is-invalid': inputRef.error}"
+      @blur="validateInput"
+      class="form-control"
+      v-bind="$attrs"
+      v-else
+      v-model="inputRef.val"
+    >
+    </textarea>
     <span class="invalid-feedback" v-if="inputRef.error">{{ inputRef.message }}</span>
   </div>
 </template>
@@ -29,11 +40,16 @@ interface RuleProp {
 }
 
 export type RulesProp = RuleProp[]
+export type TagType = 'input' | 'textarea'
 export default defineComponent({
   name: 'ValidateInput',
   props: {
     rules: Array as PropType<RulesProp>,
-    modelValue: String
+    modelValue: String,
+    tag: {
+      type: String as PropType<TagType>,
+      default: 'input'
+    }
   },
   inheritAttrs: false,
   setup (props, context) {

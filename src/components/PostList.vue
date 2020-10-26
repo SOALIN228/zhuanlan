@@ -23,13 +23,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { testPosts } from '@/testData'
 
 export default defineComponent({
   name: 'PostList',
-  setup () {
-    return {
-      list: testPosts
+  props: {
+    list: {
+      required: true
     }
   }
 })

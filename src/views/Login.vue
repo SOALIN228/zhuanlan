@@ -70,8 +70,15 @@ export default defineComponent({
     ]
     const onFormSubmit = (result: boolean) => {
       if (result) {
-        router.push('/')
-        store.commit('login')
+        const payload = {
+          email: emailVal.value,
+          password: passwordVal.value
+        }
+        store.dispatch('loginAndFetch', payload).then(() => {
+          router.push('/')
+        }).catch(e => {
+          console.log(e)
+        })
       }
     }
     return {

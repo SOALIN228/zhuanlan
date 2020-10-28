@@ -1,7 +1,8 @@
 <template>
   <div class="container">
     <global-header :user="currentUser"/>
-    <loader v-if="isLoading"  text="拼命加载中"></loader>
+    <h1>{{error.message}}</h1>
+    <loader text="拼命加载中" v-if="isLoading"></loader>
     <router-view></router-view>
     <footer class="text-center py-4 text-secondary bg-light mt-6">
       <small>
@@ -18,12 +19,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import Loader from '@/components/Loader.vue'
 import { GlobalDataProps } from '@/store'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'App',
@@ -35,9 +37,18 @@ export default defineComponent({
     const store = useStore<GlobalDataProps>()
     const currentUser = computed(() => store.state.user)
     const isLoading = computed(() => store.state.loading)
+    const token = computed(() => store.state.token)
+    const error = computed(() => store.state.error)
+    onMounted(() => {
+      if (!currentUser.value.isLogin && token.value) {
+        axios.defaults.headers.common.Authorization = `Bearer ${token.value}`
+        store.dispatch('fetchCurrentUser')
+      }
+    })
     return {
       currentUser,
-      isLoading
+      isLoading,
+      error
     }
   }
 })

@@ -8,7 +8,7 @@
   <div class="column-detail-page w-75 mx-auto">
     <div class="column-info row mb-4 border-bottom pb-4 align-items-center" v-if="column">
       <div class="col-3 text-center">
-        <img :alt="column.title" :src="column.avatar" class="rounded-circle border w-100">
+        <img :alt="column.title" :src="column.avatar && column.avatar.url" class="rounded-circle border w-100">
       </div>
       <div class="col-9">
         <h4>{{ column.title }}</h4>
@@ -20,11 +20,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import PostList from '@/components/PostList.vue'
-import { GlobalDataProps } from '@/store'
+import { GlobalDataProps, ColumnProps } from '@/store'
 
 export default defineComponent({
   name: 'ColumnDetail',
@@ -34,8 +34,18 @@ export default defineComponent({
   setup () {
     const route = useRoute()
     const store = useStore<GlobalDataProps>()
-    const currentId = +route.params.id
-    const column = computed(() => store.getters.getColumnById(currentId))
+    const currentId = route.params.id
+    onMounted(() => {
+      store.dispatch('fetchColumn', currentId)
+      store.dispatch('fetchPosts', currentId)
+    })
+    const column = computed(() => {
+      const selectColumn = store.getters.getColumnById(currentId) as ColumnProps | undefined
+      if (selectColumn && selectColumn.avatar && selectColumn.avatar.url?.indexOf('?') === -1) {
+        selectColumn.avatar.url = selectColumn.avatar.url + '?x-oss-process=image/resize,m_pad,h_100,w_100'
+      }
+      return selectColumn
+    })
     const list = computed(() => store.getters.getPostsByCid(currentId))
     return {
       column,

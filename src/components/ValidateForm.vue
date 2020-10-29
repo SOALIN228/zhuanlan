@@ -34,13 +34,13 @@ export default defineComponent({
     const callback: any = (func: ValidateFunc) => {
       funcArr.push(func)
     }
+    // 添加监听
     emitter.on('form-item-created', callback)
     onUnmounted(() => {
       // 删除监听
       emitter.off('form-item-created', callback)
       funcArr = []
     })
-    // 添加监听
     return {
       submitForm
     }

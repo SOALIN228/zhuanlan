@@ -12,7 +12,7 @@
         <router-link class="btn btn-outline-light my-2" to="/login">登录</router-link>
       </li>
       <li class="list-inline-item">
-        <router-link class="btn btn-outline-light my-2" to="/">注册</router-link>
+        <router-link class="btn btn-outline-light my-2" to="/signup">注册</router-link>
       </li>
     </ul>
     <ul class="list-inline mb-0" v-else>

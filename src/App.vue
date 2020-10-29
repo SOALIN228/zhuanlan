@@ -14,7 +14,6 @@
         </ul>
       </small>
     </footer>
-    <!--    <message :message="error.message" type="error" v-if="error.status"></message>-->
   </div>
 </template>
 
@@ -23,8 +22,7 @@ import { defineComponent, computed, watch, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import Loader from '@/components/Loader.vue'
-// import Message from '@/components/Message.vue'
-import createMessage from '@/components/createMessage'
+import { createMessage } from '@/components/Message'
 import { GlobalDataProps } from '@/store'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import axios from 'axios'

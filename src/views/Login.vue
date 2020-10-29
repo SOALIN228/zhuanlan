@@ -40,7 +40,7 @@ import { defineComponent, ref } from 'vue'
 import { useStore } from 'vuex'
 import ValidateForm from '@/components/ValidateForm.vue'
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
-import createMessage from '@/components/createMessage'
+import { createMessage } from '@/components/Message'
 import router from '@/router'
 
 export default defineComponent({

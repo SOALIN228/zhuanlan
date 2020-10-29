@@ -12,6 +12,7 @@ axios.interceptors.request.use(config => {
     config.data = { ...config.data, icode: 'F2B393DD9280AFE8' }
   }
   store.commit('setLoading', true)
+  store.commit('setError', { status: false, message: '' })
   return config
 })
 axios.interceptors.response.use(config => {
@@ -21,8 +22,8 @@ axios.interceptors.response.use(config => {
   return config
 }, e => {
   const { error } = e.response.data
-  store.commit('setError', { status: true, message: error })
   store.commit('setLoading', false)
+  store.commit('setError', { status: true, message: error })
   return Promise.reject(e.response.data)
 })
 

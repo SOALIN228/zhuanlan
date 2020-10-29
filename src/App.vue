@@ -1,7 +1,6 @@
 <template>
   <div class="container">
     <global-header :user="currentUser"/>
-    <h1>{{error.message}}</h1>
     <loader text="拼命加载中" v-if="isLoading"></loader>
     <router-view></router-view>
     <footer class="text-center py-4 text-secondary bg-light mt-6">
@@ -15,14 +14,17 @@
         </ul>
       </small>
     </footer>
+    <!--    <message :message="error.message" type="error" v-if="error.status"></message>-->
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted } from 'vue'
+import { defineComponent, computed, watch, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import Loader from '@/components/Loader.vue'
+// import Message from '@/components/Message.vue'
+import createMessage from '@/components/createMessage'
 import { GlobalDataProps } from '@/store'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import axios from 'axios'
@@ -43,6 +45,12 @@ export default defineComponent({
       if (!currentUser.value.isLogin && token.value) {
         axios.defaults.headers.common.Authorization = `Bearer ${token.value}`
         store.dispatch('fetchCurrentUser')
+      }
+    })
+    watch(() => error.value.status, () => {
+      const { status, message } = error.value
+      if (status && message) {
+        createMessage(message, 'error')
       }
     })
     return {

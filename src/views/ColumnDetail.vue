@@ -23,8 +23,9 @@
 import { defineComponent, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
-import PostList from '@/components/PostList.vue'
 import { GlobalDataProps, ColumnProps } from '@/store'
+import PostList from '@/components/PostList.vue'
+import { addColumnAvatar } from '@/helper'
 
 export default defineComponent({
   name: 'ColumnDetail',
@@ -41,8 +42,8 @@ export default defineComponent({
     })
     const column = computed(() => {
       const selectColumn = store.getters.getColumnById(currentId) as ColumnProps | undefined
-      if (selectColumn && selectColumn.avatar && selectColumn.avatar.url?.indexOf('?') === -1) {
-        selectColumn.avatar.url = selectColumn.avatar.url + '?x-oss-process=image/resize,m_pad,h_100,w_100'
+      if (selectColumn) {
+        addColumnAvatar(selectColumn, 100, 100)
       }
       return selectColumn
     })

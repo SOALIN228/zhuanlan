@@ -118,9 +118,6 @@ const store = createStore<GlobalDataProps>({
     fetchCurrentUser (state, rawData) {
       state.user = { isLogin: true, ...rawData.data }
     },
-    createPost (state, newPost) {
-      state.posts.push(newPost)
-    },
     fetchColumns (state, rawData) {
       state.columns = rawData.data.list
     },
@@ -129,6 +126,9 @@ const store = createStore<GlobalDataProps>({
     },
     fetchPosts (state, rawData) {
       state.posts = rawData.data.list
+    },
+    createPost (state, newPost) {
+      state.posts.push(newPost)
     }
   },
   actions: {
@@ -140,6 +140,9 @@ const store = createStore<GlobalDataProps>({
     },
     fetchPosts ({ commit }, cid) {
       return asyncAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit)
+    },
+    createPost ({ commit }, payload) {
+      return asyncAndCommit('/posts', 'createPost', commit, { method: 'post', data: payload })
     },
     fetchCurrentUser ({ commit }) {
       return asyncAndCommit('/user/current', 'fetchCurrentUser', commit)

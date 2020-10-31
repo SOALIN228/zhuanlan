@@ -47,6 +47,7 @@ export default defineComponent({
     }
   },
   emits: ['file-uploaded', 'file-uploaded-error'],
+  inheritAttrs: false,
   setup (props, context) {
     const fileInput = ref<null | HTMLInputElement>(null)
     const fileStatus = ref<UploadStatus>('ready')

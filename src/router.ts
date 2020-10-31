@@ -6,6 +6,7 @@
  */
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '@/store'
+import axios from 'axios'
 import Home from '@/views/Home.vue'
 import Login from '@/views/Login.vue'
 import Signup from '@/views/Signup.vue'
@@ -47,13 +48,38 @@ const router = createRouter({
   ]
 })
 router.beforeEach((to, form, next) => {
-  if (to.meta.requiredLogin && !store.state.user.isLogin) {
-    next({ name: 'login' })
-  } else if (to.meta.redirectAlreadyLogin && store.state.user.isLogin) {
-    // 登录后访问，跳转到首页
-    next('/')
+  const { user, token } = store.state
+  const { redirectAlreadyLogin, requiredLogin } = to.meta
+  if (!user.isLogin) {
+    if (token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`
+      store.dispatch('fetchCurrentUser').then((data) => {
+        // token有效，访问redirectAlreadyLogin跳转到首页
+        if (redirectAlreadyLogin) {
+          next('/')
+        } else {
+          next()
+        }
+      }).catch(e => {
+        // token无效或过期，跳转到登录页
+        console.error(e)
+        next('login')
+      })
+    } else {
+      // 未登录且不存在token，访问需要登录页面则跳转到登录页
+      if (requiredLogin) {
+        next({ name: 'login' })
+      } else {
+        next()
+      }
+    }
   } else {
-    next()
+    // 登录后访问redirectAlreadyLogin，跳转到首页
+    if (redirectAlreadyLogin) {
+      next('/')
+    } else {
+      next()
+    }
   }
 })
 export default router

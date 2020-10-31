@@ -63,6 +63,7 @@ router.beforeEach((to, form, next) => {
       }).catch(e => {
         // token无效或过期，跳转到登录页
         console.error(e)
+        store.commit('logout')
         next('login')
       })
     } else {

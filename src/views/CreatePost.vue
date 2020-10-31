@@ -7,6 +7,7 @@
 <template>
   <div class="create-post-page">
     <h4>新建文章</h4>
+    <input @change.prevent="handleFileChange" name="file" type="file">
     <validate-form @form-submit="onFormSubmit">
       <div class="mb-3">
         <label class="form-label">文章标题：</label>
@@ -40,6 +41,7 @@ import { GlobalDataProps, PostProps } from '@/store'
 import ValidateForm from '@/components/ValidateForm.vue'
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
 import router from '@/router'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'CreatePost',
@@ -73,12 +75,29 @@ export default defineComponent({
         }
       }
     }
+    const handleFileChange = (e: Event) => {
+      const target = e.target as HTMLInputElement
+      const files = target.files
+      if (files) {
+        const uploadedFile = files[0]
+        const formData = new FormData()
+        formData.append(uploadedFile.name, uploadedFile)
+        axios.post('upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }).then((resp: any) => {
+          console.log(resp)
+        })
+      }
+    }
     return {
       titleVal,
       titleRules,
       contentVal,
       contentRules,
-      onFormSubmit
+      onFormSubmit,
+      handleFileChange
     }
   }
 })

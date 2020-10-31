@@ -20,12 +20,12 @@
 <script lang="ts">
 import { defineComponent, computed, watch, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import axios from 'axios'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import Loader from '@/components/Loader.vue'
 import { createMessage } from '@/components/Message'
 import { GlobalDataProps } from '@/store'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import axios from 'axios'
 
 export default defineComponent({
   name: 'App',

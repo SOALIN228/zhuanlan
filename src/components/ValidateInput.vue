@@ -8,12 +8,11 @@
   <div class="validate-input-container pb-3">
     <input
       :class="{'is-invalid': inputRef.error}"
-      :value="inputRef.val"
       @blur="validateInput"
-      @input="updateValue"
       class="form-control"
       v-bind="$attrs"
       v-if="tag !== 'textarea'"
+      v-model="inputRef.val"
     >
     <textarea
       :class="{'is-invalid': inputRef.error}"
@@ -29,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, reactive, onMounted } from 'vue'
+import { defineComponent, PropType, reactive, computed, onMounted } from 'vue'
 import { emitter } from '@/components/ValidateForm.vue'
 
 const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
@@ -55,15 +54,16 @@ export default defineComponent({
   inheritAttrs: false,
   setup (props, context) {
     const inputRef = reactive({
-      val: props.modelValue || '',
+      // 用于获取动态传入的值
+      val: computed({
+        get: () => props.modelValue || '',
+        set: val => {
+          context.emit('update:modelValue', val)
+        }
+      }),
       error: false,
       message: ''
     })
-    const updateValue = (e: KeyboardEvent) => {
-      const targetValue = (e.target as HTMLInputElement).value
-      inputRef.val = targetValue
-      context.emit('update:modelValue', targetValue)
-    }
     const validateInput = () => {
       if (props.rules) {
         const allPassed = props.rules.every(rule => {
@@ -94,7 +94,6 @@ export default defineComponent({
     })
     return {
       inputRef,
-      updateValue,
       validateInput
     }
   }

@@ -22,10 +22,13 @@
             <router-link class="dropdown-item" to="/create">新建文章</router-link>
           </dropdown-item>
           <dropdown-item>
+            <router-link :to="`/column/${user.column}`" class="dropdown-item">我的专栏</router-link>
+          </dropdown-item>
+          <dropdown-item>
             <router-link class="dropdown-item" to="/">编辑资料</router-link>
           </dropdown-item>
           <dropdown-item>
-            <router-link class="dropdown-item" to="/">退出登录</router-link>
+            <div @click="logout" class="dropdown-item">退出登录</div>
           </dropdown-item>
         </dropdown>
       </li>
@@ -35,6 +38,8 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
+import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import { UserProps } from '@/store'
 import Dropdown from '@/components/Dropdown.vue'
 import DropdownItem from '@/components/DropdownItem.vue'
@@ -49,6 +54,17 @@ export default defineComponent({
     user: {
       type: Object as PropType<UserProps>,
       required: true
+    }
+  },
+  setup () {
+    const store = useStore()
+    const router = useRouter()
+    const logout = () => {
+      store.commit('logout')
+      router.push('/')
+    }
+    return {
+      logout
     }
   }
 })

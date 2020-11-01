@@ -6,8 +6,9 @@
 */
 <template>
   <div class="create-post-page">
-    <h4>新建文章</h4>
+    <h4>{{ isEditMode ? '编辑文章' : '新建文章' }}</h4>
     <uploader :beforeUpload="uploadCheck"
+              :uploaded="uploadedData"
               @file-uploaded="handleFileUploaded"
               action="/upload"
               class="d-flex align-items-center justify-content-center bg-light text-secondary w-100 my-4"
@@ -46,15 +47,15 @@
         />
       </div>
       <template #submit>
-        <button class="btn btn-primary btn-large">发表文章</button>
+        <button class="btn btn-primary btn-large">{{ isEditMode ? '更新文章' : '发表文章' }}</button>
       </template>
     </validate-form>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import router from '@/router'
+import { defineComponent, ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { GlobalDataProps, PostProps, ResponseType, ImageProps } from '@/store'
 import ValidateForm from '@/components/ValidateForm.vue'
@@ -72,7 +73,11 @@ export default defineComponent({
   },
   setup () {
     const store = useStore<GlobalDataProps>()
+    const router = useRouter()
+    const route = useRoute()
     const titleVal = ref('')
+    const uploadedData = ref()
+    const isEditMode = !!route.query.id
     let imageId = ''
     const titleRules: RulesProp = [
       { type: 'required', message: '文章标题不能为空' }
@@ -81,6 +86,19 @@ export default defineComponent({
     const contentRules: RulesProp = [
       { type: 'required', message: '文章详情不能为空' }
     ]
+    onMounted(() => {
+      // 是否是修改模式，修改模式获取上一次数据
+      if (isEditMode) {
+        store.dispatch('fetchPost', route.query.id).then((rawData: ResponseType<PostProps>) => {
+          const currentPost = rawData.data
+          if (currentPost.image) {
+            uploadedData.value = { data: currentPost.image }
+          }
+          titleVal.value = currentPost.title
+          contentVal.value = currentPost.content || ''
+        })
+      }
+    })
     // 图片格式验证
     const uploadCheck = (file: File) => {
       const result = beforeUploadCheck(file, { format: ['image/jpeg', 'image/png'], size: 1 })
@@ -112,7 +130,13 @@ export default defineComponent({
           if (imageId) {
             newPost.image = imageId
           }
-          store.dispatch('createPost', newPost).then(() => {
+          // 判断提交模式
+          const actionName = isEditMode ? 'updatePost' : 'createPost'
+          const sendData = isEditMode ? {
+            id: route.query.id,
+            payload: newPost
+          } : newPost
+          store.dispatch(actionName, sendData).then(() => {
             createMessage('发表成功，2秒后跳转到文章', 'success')
             setTimeout(() => {
               router.push({ name: 'column', params: { id: column } })
@@ -122,10 +146,12 @@ export default defineComponent({
       }
     }
     return {
+      isEditMode,
       titleVal,
       titleRules,
       contentVal,
       contentRules,
+      uploadedData,
       uploadCheck,
       handleFileUploaded,
       onFormSubmit

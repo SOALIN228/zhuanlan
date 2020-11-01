@@ -6,6 +6,7 @@
  */
 import { createStore, Commit } from 'vuex'
 import axios, { AxiosRequestConfig } from 'axios'
+import { objToArr, arrToObj } from '@/helper'
 
 export interface ResponseType<P = {}> {
   code: number;
@@ -49,6 +50,10 @@ export interface PostProps {
   isHTML?: boolean;
 }
 
+interface ListProps<P> {
+  [id: string]: P;
+}
+
 export interface GlobalErrorProps {
   status: boolean;
   message?: string;
@@ -58,8 +63,8 @@ export interface GlobalDataProps {
   token: string;
   error: GlobalErrorProps;
   loading: boolean;
-  columns: ColumnProps[];
-  posts: PostProps[];
+  columns: { data: ListProps<ColumnProps>; currentPage: number; total: number };
+  posts: { data: ListProps<PostProps>; loadedColumns: string[] };
   user: UserProps;
 }
 
@@ -84,16 +89,22 @@ const store = createStore<GlobalDataProps>({
     token: localStorage.getItem('token') || '',
     error: { status: false },
     loading: false,
-    columns: [],
-    posts: [],
+    columns: { data: {}, currentPage: 0, total: 0 },
+    posts: { data: {}, loadedColumns: [] },
     user: { isLogin: false }
   },
   getters: {
+    getColumns: (state) => {
+      return objToArr(state.columns.data)
+    },
     getColumnById: (state) => (id: string) => {
-      return state.columns.find(c => c._id === id)
+      return state.columns.data[id]
     },
     getPostsByCid: (state) => (cid: string) => {
-      return state.posts.filter(post => post.column === cid)
+      return objToArr(state.posts.data).filter(post => post.column === cid)
+    },
+    getCurrentPost: (state) => (id: string) => {
+      return state.posts.data[id]
     }
   },
   mutations: {
@@ -112,37 +123,74 @@ const store = createStore<GlobalDataProps>({
     logout (state) {
       state.token = ''
       state.user = { isLogin: false }
-      localStorage.remove('token')
+      localStorage.removeItem('token')
       delete axios.defaults.headers.common.Authorization
     },
     fetchCurrentUser (state, rawData) {
       state.user = { isLogin: true, ...rawData.data }
     },
     fetchColumns (state, rawData) {
-      state.columns = rawData.data.list
+      state.columns = {
+        data: { ...arrToObj(rawData.data.list) },
+        currentPage: 0,
+        total: 0
+      }
     },
     fetchColumn (state, rawData) {
-      state.columns = [rawData.data]
+      state.columns.data[rawData.data._id] = rawData.data
     },
     fetchPosts (state, rawData) {
-      state.posts = rawData.data.list
+      state.posts.data = { ...state.posts.data, ...arrToObj(rawData.data.list) }
+    },
+    fetchPost (state, rawData) {
+      state.posts.data[rawData.data._id] = rawData.data
     },
     createPost (state, newPost) {
-      state.posts.push(newPost)
+      state.posts.data[newPost._id] = newPost
+    },
+    updatePost (state, { data }) {
+      state.posts.data[data._id] = data
+    },
+    deletePost (state, { data }) {
+      delete state.posts.data[data._id]
     }
   },
   actions: {
     fetchColumns ({ commit }) {
       return asyncAndCommit('/columns', 'fetchColumns', commit)
     },
-    fetchColumn ({ commit }, cid) {
-      return asyncAndCommit(`/columns/${cid}`, 'fetchColumn', commit)
+    fetchColumn ({ state, commit }, cid) {
+      if (!state.columns.data[cid]) {
+        return asyncAndCommit(`/columns/${cid}`, 'fetchColumn', commit)
+      }
     },
     fetchPosts ({ commit }, cid) {
       return asyncAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit)
     },
+    fetchPost ({ state, commit }, id) {
+      const currentPost = state.posts.data[id]
+      if (!currentPost || !currentPost.content) {
+        return asyncAndCommit(`/posts/${id}`, 'fetchPost', commit)
+      } else {
+        return Promise.resolve({ data: currentPost })
+      }
+    },
     createPost ({ commit }, payload) {
-      return asyncAndCommit('/posts', 'createPost', commit, { method: 'post', data: payload })
+      return asyncAndCommit('/posts', 'createPost', commit, {
+        method: 'post',
+        data: payload
+      })
+    },
+    updatePost ({ commit }, { id, payload }) {
+      return asyncAndCommit(`/posts/${id}`, 'updatePost', commit, {
+        method: 'patch',
+        data: payload
+      })
+    },
+    deletePost ({ commit }, id) {
+      return asyncAndCommit(`/posts/${id}`, 'deletePost', commit, {
+        method: 'delete'
+      })
     },
     fetchCurrentUser ({ commit }) {
       return asyncAndCommit('/user/current', 'fetchCurrentUser', commit)

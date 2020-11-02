@@ -130,17 +130,20 @@ const store = createStore<GlobalDataProps>({
       state.user = { isLogin: true, ...rawData.data }
     },
     fetchColumns (state, rawData) {
+      const { data } = state.columns
+      const { list, count, currentPage } = rawData.data
       state.columns = {
-        data: { ...arrToObj(rawData.data.list) },
-        currentPage: 0,
-        total: 0
+        data: { ...data, ...arrToObj(list) },
+        total: count,
+        currentPage: currentPage * 1
       }
     },
     fetchColumn (state, rawData) {
       state.columns.data[rawData.data._id] = rawData.data
     },
-    fetchPosts (state, rawData) {
+    fetchPosts (state, { data: rawData, extraData: columnId }) {
       state.posts.data = { ...state.posts.data, ...arrToObj(rawData.data.list) }
+      state.posts.loadedColumns.push(columnId)
     },
     fetchPost (state, rawData) {
       state.posts.data[rawData.data._id] = rawData.data
@@ -156,16 +159,21 @@ const store = createStore<GlobalDataProps>({
     }
   },
   actions: {
-    fetchColumns ({ commit }) {
-      return asyncAndCommit('/columns', 'fetchColumns', commit)
+    fetchColumns ({ state, commit }, params = {}) {
+      const { currentPage = 1, pageSize = 6 } = params
+      if (state.columns.currentPage < currentPage) {
+        return asyncAndCommit(`/columns?currentPage=${currentPage}&pageSize=${pageSize}`, 'fetchColumns', commit)
+      }
     },
     fetchColumn ({ state, commit }, cid) {
       if (!state.columns.data[cid]) {
         return asyncAndCommit(`/columns/${cid}`, 'fetchColumn', commit)
       }
     },
-    fetchPosts ({ commit }, cid) {
-      return asyncAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit)
+    fetchPosts ({ state, commit }, cid) {
+      if (!state.posts.loadedColumns.includes(cid)) {
+        return asyncAndCommit(`/columns/${cid}/posts`, 'fetchPosts', commit, { method: 'get' }, cid)
+      }
     },
     fetchPost ({ state, commit }, id) {
       const currentPost = state.posts.data[id]

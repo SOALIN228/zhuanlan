@@ -5,8 +5,8 @@
 * Desc:
 */
 <template>
-  <teleport to="#modal">
-    <div class="modal d-block" tabindex="-1" v-if="visible">
+  <teleport to="#modal" v-if="visible">
+    <div class="modal d-block" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">

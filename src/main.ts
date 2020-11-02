@@ -4,7 +4,7 @@ import store from '@/store'
 import axios from 'axios'
 import App from './App.vue'
 
-// axios.defaults.baseURL = 'http://apis.imooc.com/api'
+axios.defaults.baseURL = 'http://apis.imooc.com/api'
 axios.interceptors.request.use(config => {
   if (config.url === '/upload') {
     return config
